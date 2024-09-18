@@ -32,4 +32,5 @@ Route::middleware('auth:sanctum')->group(function(){
      Route::get('delete-product/{id}', [App\Http\Controllers\api\ProductController::class, 'deleteProduct'])->name('delete-product');
 });
 
-Route::post('login',  [App\Http\Controllers\apiController::class, 'loginSubmit'])->name('login');
+Route::post('login', [App\Http\Controllers\apiController::class, 'loginSubmit'])->name('login');
+Route::post('login', [App\Http\Controllers\apiController::class, 'loginSubmit'])->name('login');
