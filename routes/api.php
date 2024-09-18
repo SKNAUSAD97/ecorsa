@@ -33,4 +33,3 @@ Route::middleware('auth:sanctum')->group(function(){
 });
 
 Route::post('login', [App\Http\Controllers\apiController::class, 'loginSubmit'])->name('login');
-Route::post('loginNew', [App\Http\Controllers\apiController::class, 'loginSubmit'])->name('login');
