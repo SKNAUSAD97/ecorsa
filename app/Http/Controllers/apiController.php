@@ -30,7 +30,8 @@ class apiController extends Controller
     
         if (\Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = User::where('email', strval($request->email))->first();
-            return response()->json(['status' => 200, 'message' => 'Login Successful...','user' => Auth::user(), 'token' => $user->createToken("API TOKEN")->plainTextToken,], 200);
+            $user->photo = json_decode($user->photo);
+            return response()->json(['status' => 200, 'message' => 'Login Successful...','user' => $user, 'token' => $user->createToken("API TOKEN")->plainTextToken,], 200);
         }else{
             return response()->json(['message' => 'Invalid Credentials Provided...'], 400);
         }
@@ -39,7 +40,7 @@ class apiController extends Controller
     public function addUser(Request $request)
     {
         // Check if it's an update operation (id > 0)
-        if ($request->id > 0) {
+        if (isset($request->id)) {
             $validator = \Validator::make($request->all(), [
                 'name' => 'required',
                 'email' => 'required',
@@ -86,14 +87,14 @@ class apiController extends Controller
             ];
             $users['photo'] = json_encode($photo);
         } else {
-            if ($request->id > 0) {
+            if (isset($request->id)) {
                 $existing_user = User::find($request->id);
                 $users['photo'] = $existing_user->photo; // Retain existing photo if no new image uploaded
             }
         }
 
         // Update or create user
-        if ($request->id > 0) {
+        if (isset($request->id)) {
             User::find($request->id)->update($users);
             $message = "User Updated Successfully";
         } else {
