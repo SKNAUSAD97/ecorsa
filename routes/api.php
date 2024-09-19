@@ -8,6 +8,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('addUser', [App\Http\Controllers\apiController::class, 'addUser'])->name('addUser');
     Route::get('delete-user/{id}', [App\Http\Controllers\apiController::class, 'deleteUser']);
     Route::get('user', [App\Http\Controllers\apiController::class, 'getUser']);
+    
     Route::post('store-word', [App\Http\Controllers\apiController::class, 'storeWord'])->name('store-word');
     Route::get('get-word', [App\Http\Controllers\apiController::class, 'getWord'])->name('get-word');
     Route::get('product', [App\Http\Controllers\productController::class, 'product'])->name('product');
@@ -15,6 +16,11 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('add-category', [App\Http\Controllers\api\CategoryController::class, 'addCategory'])->name('add-category');
     Route::get('categories', [App\Http\Controllers\api\CategoryController::class, 'categories'])->name('categories');
     Route::get('delete-category/{id}', [App\Http\Controllers\api\CategoryController::class, 'deleteCategory'])->name('delete-category');
+
+    // Sports Facilities Section
+    Route::post('add-facilities', [App\Http\Controllers\api\CategoryController::class, 'addFacilities'])->name('add-facilities');
+    Route::get('sports-facilities', [App\Http\Controllers\api\CategoryController::class, 'sportsFacilities'])->name('sports-facilities');
+    
     // Subcategory Section
     Route::post('add-subcategory', [App\Http\Controllers\api\CategoryController::class, 'addSubCategory'])->name('add-subcategory');
     Route::get('subcategories', [App\Http\Controllers\api\CategoryController::class, 'subcategories'])->name('subcategories');

@@ -27,7 +27,9 @@ class apiController extends Controller
     }
 
     public function loginSubmit(Request $request){
-    
+        if(!isset($request->email) || !isset($request->password)){
+            return response()->json(['message' => 'Email Or Password Not Provided.'], 400);
+        }
         if (\Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = User::where('email', strval($request->email))->first();
             $user->photo = json_decode($user->photo);
@@ -39,7 +41,7 @@ class apiController extends Controller
 
     public function addUser(Request $request)
     {
-        // Check if it's an update operation (id > 0)
+        // Check if it's an update operation (isset(id))
         if (isset($request->id)) {
             $validator = \Validator::make($request->all(), [
                 'name' => 'required',
@@ -76,7 +78,7 @@ class apiController extends Controller
             "pin" => $request->pin,
         ];
 
-        // Handle image upload
+        // Handle image upload  
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $filename = time() . '_' . $file->getClientOriginalName();
@@ -106,7 +108,6 @@ class apiController extends Controller
         // Return response
         return $this->sendResponse($users, $message);
     }
-
 
     public function deleteUser($id){
         $user = User::find($id);
@@ -198,4 +199,103 @@ class apiController extends Controller
         Englis::create($word);
         return $this->sendResponse($word, 'New Word Has Been Created.');
     }
+
+
+    //APIs 
+
+    public function sportsFacilities(){
+        $search = isset($_GET['search']) ? $_GET['search'] : null;
+        $page = isset($_GET['page']) ? $_GET['page'] : 1;
+        $pageSize = isset($_GET['limit']) ? $_GET['limit'] : 10;
+
+        $query = facilities::orderBy('id', 'desc')->get();
+        // Apply search condition
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('mobile', 'like', '%' . $search . '%');
+            });
+        }
+        $totalCount = $query->count(); // Total Count
+        $facilities = $query->skip(($page - 1) * $pageSize)->take($pageSize)->get(); // Total Data
+
+        $startIndex = $page != 0 ? (($page - 1) * $pageSize + 1) : $page + 1;
+        foreach ($facilities as $key => $value) {
+            $facilities[$key]->sl = $startIndex + $key;
+            $facilities[$key]->photo = json_decode($value->photo);
+        }
+
+        $response = [
+            'facilities' => $facilities,
+            'total' => $totalCount,
+        ];
+
+        return $this->sendResponse($response, "Success");
+    }
+
+    public function addFacilities(Request $request)
+    {
+        // Check if it's an update operation (isset(id))
+        if (isset($request->id)) {
+            $validator = \Validator::make($request->all(), [
+                'name' => 'required|unique:facilities',
+                'summary' => 'required',
+                'description' => 'required',
+            ]);
+        } else {
+            // For creating a new facility
+            $validator = \Validator::make($request->all(), [
+                'name' => 'required|unique:facilities',
+                'summary' => 'required',
+                'description' => 'required',
+            ]);
+        }
+
+        // Validation failure response
+        if ($validator->fails()) {
+            $errorMessages = $validator->errors()->toArray();
+            foreach ($errorMessages as $field => $messages) {
+                return $this->sendError($messages[0]); // Return first error message
+            }
+        }
+
+        // Prepare user data
+        $facilities = [
+            "name" => $request->name,
+            "summary" => $request->summary,
+            "description" => $request->description,
+        ];
+
+        // Handle image upload  
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads'), $filename);
+            $photo = [
+                'type' => 'default',
+                'secure_url' => $filename
+            ];
+            $facilities['photo'] = json_encode($photo);
+        } else {
+            if (isset($request->id)) {
+                $existing_user = User::find($request->id);
+                $facilities['photo'] = $existing_user->photo; // Retain existing photo if no new image uploaded
+            }
+        }
+
+        // Update or create user
+        if (isset($request->id)) {
+            User::find($request->id)->update($facilities);
+            $message = "User Updated Successfully";
+        } else {
+            $facilities['password'] = bcrypt($request->password); // Hash password for new user
+            User::create($facilities);
+            $message = "User Created Successfully";
+        }
+
+        // Return response
+        return $this->sendResponse($users, $message);
+    }
+
+
 }
